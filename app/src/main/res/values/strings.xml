@@ -5,4 +5,6 @@
     <string name="title_add">Add</string>
     <string name="dashboard_welcome">Hi, Welcome Back</string>
     <string name="notif">notification</string>
+    <string name="dashboard_balance">Total Balance</string>
+    <string name="dashboard_expense">Total Expense</string>
 </resources>

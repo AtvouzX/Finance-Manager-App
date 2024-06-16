@@ -6,17 +6,149 @@
     android:layout_height="match_parent"
     tools:context=".ui.home.HomeFragment">
 
-    <TextView
-        android:id="@+id/text_home"
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="8dp"
-        android:textAlignment="center"
-        android:textSize="20sp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:layout_height="match_parent"
+        android:background="@color/bgGray"
+        tools:layout_editor_absoluteX="26dp"
+        tools:layout_editor_absoluteY="37dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <LinearLayout
+                    android:id="@+id/linearLayout5"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="horizontal">
+
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent">
+
+                        <TextView
+                            android:id="@+id/text_dashboard_welcome"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="38dp"
+                            android:layout_marginTop="28dp"
+                            android:fontFamily="@font/poppins_medium"
+                            android:text="@string/dashboard_welcome"
+                            android:textAlignment="textStart"
+                            android:textColor="@color/txMain"
+                            android:textSize="20sp"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent" />
+
+                        <ImageButton
+                            android:id="@+id/btn_notif"
+                            android:layout_width="30dp"
+                            android:layout_height="30dp"
+                            android:layout_marginTop="29dp"
+                            android:layout_marginEnd="36dp"
+                            android:background="@drawable/rectangle_bg_notification"
+                            android:contentDescription="@string/notif"
+                            android:scaleType="centerInside"
+                            android:src="@drawable/ic_notification"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintTop_toTopOf="parent"
+                            tools:ignore="TouchTargetSizeCheck" />
+
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_marginTop="41dp"
+                    android:orientation="horizontal"
+                    app:layout_constraintTop_toBottomOf="@+id/linearLayout5">
+
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent">
+
+                        <LinearLayout
+                            android:id="@+id/linearLayout7"
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:layout_marginStart="60dp"
+                            android:orientation="vertical"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent">
+
+                            <TextView
+                                android:id="@+id/textView"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:fontFamily="@font/poppins"
+                                android:text="@string/dashboard_balance"
+                                android:textColor="@color/txMain"
+                                android:textSize="12sp" />
+
+                            <TextView
+                                android:id="@+id/textView3"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:fontFamily="@font/poppins_medium"
+                                android:text="Rp 200,000"
+                                android:textColor="@color/purple"
+                                android:textSize="24sp" />
+                        </LinearLayout>
+
+                        <FrameLayout
+                            android:layout_width="1dp"
+                            android:layout_height="0dp"
+                            android:layout_marginTop="2dp"
+                            android:layout_marginBottom="2dp"
+                            android:background="@drawable/rectangle_line_divider"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintEnd_toStartOf="@+id/linearLayout6"
+                            app:layout_constraintStart_toEndOf="@+id/linearLayout7"
+                            app:layout_constraintTop_toTopOf="parent">
+
+                        </FrameLayout>
+
+                        <LinearLayout
+                            android:id="@+id/linearLayout6"
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:layout_marginEnd="60dp"
+                            android:orientation="vertical"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintTop_toTopOf="parent">
+
+                            <TextView
+                                android:id="@+id/textView2"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:fontFamily="@font/poppins"
+                                android:text="@string/dashboard_expense"
+                                android:textColor="@color/txMain"
+                                android:textSize="12sp" />
+
+                            <TextView
+                                android:id="@+id/textView4"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:fontFamily="@font/poppins_medium"
+                                android:text="-Rp 40,000"
+                                android:textColor="@color/purple"
+                                android:textSize="24sp" />
+                        </LinearLayout>
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+
+                </LinearLayout>
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+        </LinearLayout>
+    </ScrollView>
+
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -28,7 +28,7 @@ class TransactionFragment : Fragment() {
         _binding = FragmentDashboardBinding.inflate(inflater, container, false)
         val root: View = binding.root
 
-        val textView: TextView = binding.textDashboard
+        val textView: TextView = binding.textView
         transactionViewModel.text.observe(viewLifecycleOwner) {
             textView.text = it
         }
