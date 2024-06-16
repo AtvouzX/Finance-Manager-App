@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--LinearLayout orientation horizontal -->
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/llMain"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:padding="10dp">
+
+    <!--TextView for displaying Name -->
+    <androidx.cardview.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
+        android:background="@color/white"
+        android:foreground="?attr/selectableItemBackground"
+        app:cardCornerRadius="3dp"
+        app:cardElevation="3dp"
+        app:cardUseCompatPadding="true">
+
+        <!--LinearLayout orientation Vertical -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="15dp"
+            android:orientation="vertical">
+
+            <!--TextView for displaying Name -->
+
+            <TextView
+                android:id="@+id/amounttext"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@android:color/black"
+                android:textSize="20sp"
+                tools:text="Amount" />
+
+            <TextView
+                android:id="@+id/datetext"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:textColor="#454545"
+                android:textSize="16sp"
+                tools:text="Date" />
+
+            <TextView
+                android:id="@+id/descriptiontext"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="#454545"
+                android:textSize="16sp"
+                tools:text="Description"/>
+
+            <!--TextView for displaying Email -->
+
+        </LinearLayout>
+
+    </androidx.cardview.widget.CardView>
+
+</LinearLayout>

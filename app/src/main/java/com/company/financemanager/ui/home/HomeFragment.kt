@@ -6,11 +6,21 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
-import com.company.financemanager.databinding.FragmentDashboardBinding
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.company.financemanager.R
+import com.company.financemanager.adapter.HomeAdapter
 import com.company.financemanager.databinding.FragmentHomeBinding
+import com.company.financemanager.models.HomeHistory
+import com.google.firebase.database.DatabaseReference
 
+private lateinit var homeViewModel: HomeViewModel
+private lateinit var HomeRecyclerview : RecyclerView
+private lateinit var adapter : HomeAdapter
 class HomeFragment : Fragment() {
+
 
     private var _binding: FragmentHomeBinding? = null
 
@@ -29,10 +39,7 @@ class HomeFragment : Fragment() {
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
         val root: View = binding.root
 
-        val textView: TextView = binding.textView7
-        homeViewModel.text.observe(viewLifecycleOwner) {
-            textView.text = it
-        }
+
         return root
     }
 
@@ -40,4 +47,22 @@ class HomeFragment : Fragment() {
         super.onDestroyView()
         _binding = null
     }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        HomeRecyclerview = view.findViewById(R.id.tr_history)
+        HomeRecyclerview.layoutManager = LinearLayoutManager(context)
+        HomeRecyclerview.setHasFixedSize(true)
+        adapter = HomeAdapter()
+        HomeRecyclerview.adapter = adapter
+
+        homeViewModel = ViewModelProvider(this).get(HomeViewModel::class.java)
+
+        homeViewModel.history.observe(viewLifecycleOwner, Observer {
+            adapter.updateHomeList(it)
+        })
+    }
+
+
 }
