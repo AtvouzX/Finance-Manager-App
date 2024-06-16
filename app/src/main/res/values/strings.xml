@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">Finance Manager</string>
+    <string name="title_home">Home</string>
+    <string name="title_transaction">Transaction</string>
+    <string name="title_add">Add</string>
+    <string name="dashboard_welcome">Hi, Welcome Back</string>
+    <string name="notif">notification</string>
+</resources>
