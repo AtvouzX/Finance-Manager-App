@@ -35,6 +35,7 @@ class HomeAdapter : RecyclerView.Adapter<HomeAdapter.HomeViewHolder>() {
         val currentItem = homeList[position]
         holder.date.text = currentItem.date
         holder.description.text = currentItem.description
+        holder.subcategory.text = currentItem.subcategory
 
         val numberFormat = NumberFormat.getNumberInstance(Locale("id", "ID"))
 
@@ -75,6 +76,7 @@ class HomeAdapter : RecyclerView.Adapter<HomeAdapter.HomeViewHolder>() {
         val amount : TextView = itemView.findViewById(R.id.amounttext)
         val date : TextView = itemView.findViewById(R.id.datetext)
         val description : TextView = itemView.findViewById(R.id.descriptiontext)
+        val subcategory : TextView = itemView.findViewById(R.id.subcategorytext)
 
     }
 }
