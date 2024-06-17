@@ -23,4 +23,5 @@
     <color name="warning">#FFFFED46</color>
     <color name="success">#FF9EFF86</color>
     <color name="red">#FFFF6961</color>
+    <color name="green">#4CAF50</color>
 </resources>
