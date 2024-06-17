@@ -7,4 +7,5 @@
     <string name="notif">notification</string>
     <string name="dashboard_balance">Total Balance</string>
     <string name="dashboard_expense">Total Expense</string>
+    <string name="date">Date</string>
 </resources>
