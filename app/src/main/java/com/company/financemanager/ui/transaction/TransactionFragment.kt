@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import com.company.financemanager.databinding.FragmentAddBinding
 import com.company.financemanager.databinding.FragmentTransactionBinding
 
 class TransactionFragment : Fragment() {
@@ -21,17 +22,11 @@ class TransactionFragment : Fragment() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View {
-        val transactionViewModel =
-            ViewModelProvider(this).get(TransactionViewModel::class.java)
-
+    ): View? {
         _binding = FragmentTransactionBinding.inflate(inflater, container, false)
         val root: View = binding.root
 
-        val textView: TextView = binding.textView
-        transactionViewModel.text.observe(viewLifecycleOwner) {
-            textView.text = it
-        }
+
         return root
     }
 

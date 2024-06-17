@@ -22,8 +22,6 @@ class AddFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        val addViewModel =
-            ViewModelProvider(this).get(AddViewModel::class.java)
 
         _binding = FragmentAddBinding.inflate(inflater, container, false)
         val root: View = binding.root
