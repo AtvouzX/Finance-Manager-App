@@ -9,7 +9,7 @@
     android:layout_height="wrap_content"
     android:gravity="center_vertical"
     android:orientation="horizontal"
-    android:padding="10dp">
+    >
 
     <!--TextView for displaying Name -->
     <androidx.cardview.widget.CardView
@@ -17,47 +17,71 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:layout_marginEnd="8dp"
+        android:layout_marginBottom="2dp"
         android:background="@color/white"
         android:foreground="?attr/selectableItemBackground"
-        app:cardCornerRadius="3dp"
+        app:cardCornerRadius="10dp"
         app:cardElevation="3dp"
-        app:cardUseCompatPadding="true">
+        >
 
         <!--LinearLayout orientation Vertical -->
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:padding="15dp"
-            android:orientation="vertical">
+            android:layout_height="match_parent"
+            android:orientation="horizontal">
 
-            <!--TextView for displaying Name -->
-
-            <TextView
-                android:id="@+id/amounttext"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textColor="@android:color/black"
-                android:textSize="20sp"
-                tools:text="Amount" />
-
-            <TextView
-                android:id="@+id/datetext"
+            <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_weight="1"
-                android:textColor="#454545"
-                android:textSize="16sp"
-                tools:text="Date" />
+                android:layout_height="match_parent">
 
-            <TextView
-                android:id="@+id/descriptiontext"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textColor="#454545"
-                android:textSize="16sp"
-                tools:text="Description"/>
+                <TextView
+                    android:id="@+id/amounttext"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="20dp"
+                    android:fontFamily="@font/poppins_medium"
+                    android:textColor="@color/purple"
+                    android:textSize="15sp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    tools:text="Amount" />
 
-            <!--TextView for displaying Email -->
+                <LinearLayout
+                    android:id="@+id/linearLayout3"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="10dp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent">
+
+                    <!--TextView for displaying Name -->
+
+                    <TextView
+                        android:id="@+id/descriptiontext"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/poppins"
+                        android:textColor="@color/txMain"
+                        android:textSize="15sp"
+                        tools:text="Description" />
+
+                    <TextView
+                        android:id="@+id/datetext"
+                        android:layout_width="match_parent"
+                        android:layout_height="0dp"
+                        android:layout_weight="1"
+                        android:fontFamily="@font/poppins"
+                        android:textColor="#454545"
+                        android:textSize="12sp"
+                        tools:text="Date" />
+
+                    <!--TextView for displaying Email -->
+
+                </LinearLayout>
+            </androidx.constraintlayout.widget.ConstraintLayout>
 
         </LinearLayout>
 

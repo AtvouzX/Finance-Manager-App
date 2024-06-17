@@ -7,7 +7,6 @@ import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
-import com.google.firebase.database.Transaction
 import com.google.firebase.database.ValueEventListener
 
 class HomeRepository {
@@ -22,14 +21,20 @@ class HomeRepository {
         }
     }
 
-    fun loadTransactions(transactionsList : MutableLiveData<List<HomeHistory>>) {
+    fun loadTransactions(transactionsList: MutableLiveData<List<HomeHistory>>) {
         databaseReference.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
-
                 try {
-                    val _transactionsList : List<HomeHistory> = snapshot.children.map { dataSnapshot ->
-                        dataSnapshot.getValue(HomeHistory::class.java)!!
+                    val _transactionsList: MutableList<HomeHistory> = mutableListOf()
+                    for (dataSnapshot in snapshot.children) {
+                        val transaction = dataSnapshot.getValue(HomeHistory::class.java)
+                        if (transaction != null) {
+                            _transactionsList.add(transaction)
+                        }
                     }
+                    // Urutkan daftar berdasarkan tanggal terbaru
+                    _transactionsList.sortByDescending { it.date }
+
                     transactionsList.postValue(_transactionsList)
 
                 } catch (e: Exception) {

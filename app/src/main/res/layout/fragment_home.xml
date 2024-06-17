@@ -28,8 +28,11 @@
                     android:id="@+id/tr_history"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
+                    android:layout_marginTop="20dp"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/linearLayout2" />
+                    app:layout_constraintTop_toBottomOf="@+id/linearLayout2"
+                    tools:itemCount="5"
+                    tools:listitem="@layout/singlerow" />
 
                 <LinearLayout
                     android:id="@+id/linearLayout5"
@@ -89,7 +92,7 @@
                             android:id="@+id/linearLayout7"
                             android:layout_width="wrap_content"
                             android:layout_height="match_parent"
-                            android:layout_marginStart="60dp"
+                            android:layout_marginStart="40dp"
                             android:orientation="vertical"
                             app:layout_constraintStart_toStartOf="parent"
                             app:layout_constraintTop_toTopOf="parent">
@@ -104,7 +107,7 @@
                                 android:textSize="12sp" />
 
                             <TextView
-                                android:id="@+id/textView3"
+                                android:id="@+id/balance_amount"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:fontFamily="@font/poppins_medium"
@@ -114,7 +117,7 @@
                         </LinearLayout>
 
                         <FrameLayout
-                            android:layout_width="1dp"
+                            android:layout_width="wrap_content"
                             android:layout_height="0dp"
                             android:layout_marginTop="2dp"
                             android:layout_marginBottom="2dp"
@@ -130,7 +133,7 @@
                             android:id="@+id/linearLayout6"
                             android:layout_width="wrap_content"
                             android:layout_height="match_parent"
-                            android:layout_marginEnd="60dp"
+                            android:layout_marginEnd="40dp"
                             android:orientation="vertical"
                             app:layout_constraintEnd_toEndOf="parent"
                             app:layout_constraintTop_toTopOf="parent">
@@ -145,7 +148,7 @@
                                 android:textSize="12sp" />
 
                             <TextView
-                                android:id="@+id/textView4"
+                                android:id="@+id/expense_amount"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:fontFamily="@font/poppins_medium"
