@@ -69,7 +69,7 @@ class AddFragment : Fragment() {
         }
         recyclerViewSubcategory.adapter = subcategoryAdapter
 
-        database = FirebaseDatabase.getInstance().reference.child("categories").child("Expense")
+        database = FirebaseDatabase.getInstance().reference
 
         loadSubcategories()
 
@@ -114,18 +114,25 @@ class AddFragment : Fragment() {
     }
 
     private fun loadSubcategories() {
-        database.addValueEventListener(object : ValueEventListener {
+        val expenseRef = database.child("categories").child("Expense")
+        val incomeRef = database.child("categories").child("Income")
+
+        val subcategoryListener = object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
-                subcategoryList.clear()
                 for (dataSnapshot in snapshot.children) {
                     val subcategory = dataSnapshot.key ?: continue
-                    subcategoryList.add(subcategory)
+                    if (!subcategoryList.contains(subcategory)) {
+                        subcategoryList.add(subcategory)
+                    }
                 }
                 subcategoryAdapter.notifyDataSetChanged()
             }
 
             override fun onCancelled(error: DatabaseError) {}
-        })
+        }
+
+        expenseRef.addValueEventListener(subcategoryListener)
+        incomeRef.addValueEventListener(subcategoryListener)
     }
 
     private fun filterSubcategories(query: String) {
