@@ -112,14 +112,12 @@
                         android:layout_height="match_parent"
                         android:orientation="horizontal">
 
-                        <EditText
-                            android:id="@+id/editTextSubcategory"
-                            android:layout_width="match_parent"
+                        <AutoCompleteTextView
+                            android:id="@+id/autoCompleteCategory"
+                            android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_marginEnd="10dp"
                             android:layout_weight="1"
-                            android:clickable="true"
-                            android:focusable="false"
                             android:fontFamily="@font/poppins"
                             android:inputType="text"
                             android:textColor="@color/txMain"
@@ -127,13 +125,12 @@
 
                         <ImageButton
                             android:id="@+id/buttonSubcategory"
-                            android:layout_width="wrap_content"
+                            android:layout_width="23dp"
                             android:layout_height="wrap_content"
-                            android:layout_weight="1"
+                            android:layout_weight="0"
                             android:backgroundTint="#00FFFFFF"
                             android:contentDescription="Select Subcategory"
                             android:src="@drawable/ic_arrow_down" />
-
                     </LinearLayout>
 
                     <androidx.recyclerview.widget.RecyclerView
