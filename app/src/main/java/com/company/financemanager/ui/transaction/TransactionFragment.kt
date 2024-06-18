@@ -6,32 +6,92 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.ViewModelProvider
-import com.company.financemanager.databinding.FragmentAddBinding
-import com.company.financemanager.databinding.FragmentTransactionBinding
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.company.financemanager.adapter.TransactionAdapter
+import com.google.firebase.database.*
+import java.text.NumberFormat
+import java.util.*
+import com.company.financemanager.R
+import com.company.financemanager.adapter.GroupedTransaction
+import com.company.financemanager.adapter.GroupedTransactionAdapter
+import com.company.financemanager.models.TransactionModels
 
 class TransactionFragment : Fragment() {
 
-    private var _binding: FragmentTransactionBinding? = null
-
-    // This property is only valid between onCreateView and
-    // onDestroyView.
-    private val binding get() = _binding!!
+    private lateinit var textViewBalanceAmount: TextView
+    private lateinit var textViewIncomeAmount: TextView
+    private lateinit var textViewExpenseAmount: TextView
+    private lateinit var transactionRecyclerView: RecyclerView
+    private lateinit var database: DatabaseReference
+    private lateinit var groupedTransactionAdapter: GroupedTransactionAdapter
+    private val groupedTransactionList = mutableListOf<GroupedTransaction>()
 
     override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
+        inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        _binding = FragmentTransactionBinding.inflate(inflater, container, false)
-        val root: View = binding.root
+        val view = inflater.inflate(R.layout.fragment_transaction, container, false)
 
+        textViewBalanceAmount = view.findViewById(R.id.textViewBalanceAmount)
+        textViewIncomeAmount = view.findViewById(R.id.textViewIncomeAmount)
+        textViewExpenseAmount = view.findViewById(R.id.textViewExpenseAmount)
+        transactionRecyclerView = view.findViewById(R.id.transactionRecyclerView)
 
-        return root
+        transactionRecyclerView.layoutManager = LinearLayoutManager(context)
+        groupedTransactionAdapter = GroupedTransactionAdapter(groupedTransactionList)
+        transactionRecyclerView.adapter = groupedTransactionAdapter
+
+        database = FirebaseDatabase.getInstance().reference
+
+        loadBalanceData()
+        loadTransactionData()
+
+        return view
     }
 
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
+    private fun loadBalanceData() {
+        database.child("balance").addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val totalBalance = snapshot.child("total_balance").getValue(Double::class.java) ?: 0.0
+                val totalIncome = snapshot.child("total_income").getValue(Double::class.java) ?: 0.0
+                val totalExpense = snapshot.child("total_expense").getValue(Double::class.java) ?: 0.0
+                val numberFormat = NumberFormat.getNumberInstance(Locale("id", "ID"))
+
+                textViewBalanceAmount.text = "Rp ${numberFormat.format(totalBalance)}"
+                textViewIncomeAmount.text = "Rp ${numberFormat.format(totalIncome)}"
+                textViewExpenseAmount.text = "Rp ${numberFormat.format(totalExpense)}"
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                // Handle errors here
+            }
+        })
+    }
+
+    private fun loadTransactionData() {
+        database.child("transactions").addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                groupedTransactionList.clear()
+                val transactions = mutableListOf<TransactionModels>()
+                for (dataSnapshot in snapshot.children) {
+                    val transaction = dataSnapshot.getValue(TransactionModels::class.java)
+                    if (transaction != null) {
+                        transactions.add(transaction)
+                    }
+                }
+                groupedTransactionList.clear()
+                val groupedByDate = transactions.groupBy { it.date }
+                for ((date, transactionsOnDate) in groupedByDate) {
+                    groupedTransactionList.add(GroupedTransaction(date.toString(), transactionsOnDate))
+                }
+                groupedTransactionList.sortByDescending { it.date }
+                groupedTransactionAdapter.notifyDataSetChanged()
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                // Handle errors here
+            }
+        })
     }
 }

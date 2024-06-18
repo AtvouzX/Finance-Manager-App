@@ -2,17 +2,12 @@ package com.company.financemanager.ui.add
 
 import android.app.DatePickerDialog
 import android.os.Bundle
-import android.text.Editable
-import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageButton
-import android.widget.TextView
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.company.financemanager.R
@@ -24,9 +19,6 @@ import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 import java.text.SimpleDateFormat
-import java.util.Calendar.YEAR
-import java.util.Calendar.MONTH
-import java.util.Calendar.DAY_OF_MONTH
 import java.util.Locale
 import java.util.*
 
@@ -47,7 +39,7 @@ class AddFragment : Fragment() {
 
     // This property is only valid between onCreateView and
     // onDestroyView.
-    private val binding get() = _binding!!
+
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -96,14 +88,14 @@ class AddFragment : Fragment() {
         editTextSubcategory.setOnClickListener(subcategoryClickListener)
         buttonSubcategory.setOnClickListener(subcategoryClickListener)
 
-        editTextSubcategory.addTextChangedListener(object : TextWatcher {
+        /*editTextSubcategory.addTextChangedListener(object : TextWatcher {
             override fun afterTextChanged(s: Editable?) {
                 filterSubcategories(s.toString())
             }
 
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
-        })
+        })*/
 
         return view
     }
@@ -135,10 +127,10 @@ class AddFragment : Fragment() {
         incomeRef.addValueEventListener(subcategoryListener)
     }
 
-    private fun filterSubcategories(query: String) {
+    /*private fun filterSubcategories(query: String) {
         val filteredList = subcategoryList.filter { it.contains(query, ignoreCase = true) }
         subcategoryAdapter.updateList(filteredList)
-    }
+    }*/
 
     override fun onDestroyView() {
         super.onDestroyView()

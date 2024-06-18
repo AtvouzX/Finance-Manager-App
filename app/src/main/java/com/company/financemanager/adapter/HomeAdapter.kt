@@ -61,7 +61,7 @@ class HomeAdapter : RecyclerView.Adapter<HomeAdapter.HomeViewHolder>() {
         val formattedDate = date?.let { outputFormat.format(it) } ?: currentItem.date
         holder.date.text = formattedDate
 
-        }
+    }
 
 
 
