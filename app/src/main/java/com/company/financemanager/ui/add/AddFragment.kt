@@ -57,7 +57,7 @@ class AddFragment : Fragment() {
         val view = inflater.inflate(R.layout.fragment_add, container, false)
         editTextDate = view.findViewById(R.id.editTextDate)
         buttonCalendar = view.findViewById(R.id.buttonCalendar)
-        editTextSubcategory = view.findViewById(R.id.editTextSubcategory)
+        editTextSubcategory = view.findViewById(R.id.autoCompleteCategory)
         buttonSubcategory = view.findViewById(R.id.buttonSubcategory)
         recyclerViewSubcategory = view.findViewById(R.id.recyclerViewSubcategory)
 
