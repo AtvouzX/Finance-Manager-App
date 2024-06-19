@@ -82,6 +82,7 @@ class AddFragment : Fragment() {
         database = FirebaseDatabase.getInstance().reference
 
         loadCategories()
+        loadSubcategories()
 
         val dateSetListener = DatePickerDialog.OnDateSetListener { _, year, month, dayOfMonth ->
             calendar.set(Calendar.YEAR, year)
@@ -231,27 +232,27 @@ class AddFragment : Fragment() {
         editTextDescription.text.clear()
     }
 
-//    private fun loadSubcategories() {
-//        val expenseRef = database.child("categories").child("Expense")
-//        val incomeRef = database.child("categories").child("Income")
-//
-//        val subcategoryListener = object : ValueEventListener {
-//            override fun onDataChange(snapshot: DataSnapshot) {
-//                for (dataSnapshot in snapshot.children) {
-//                    val subcategory = dataSnapshot.key ?: continue
-//                    if (!subcategoryList.contains(subcategory)) {
-//                        subcategoryList.add(subcategory)
-//                    }
-//                }
-//                categoryAdapter.notifyDataSetChanged()
-//            }
-//
-//            override fun onCancelled(error: DatabaseError) {}
-//        }
-//
-//        expenseRef.addValueEventListener(subcategoryListener)
-//        incomeRef.addValueEventListener(subcategoryListener)
-//    }
+    private fun loadSubcategories() {
+        val expenseRef = database.child("categories").child("Expense")
+        val incomeRef = database.child("categories").child("Income")
+
+        val subcategoryListener = object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                for (dataSnapshot in snapshot.children) {
+                    val subcategory = dataSnapshot.key ?: continue
+                    if (!subcategoryList.contains(subcategory)) {
+                        subcategoryList.add(subcategory)
+                    }
+                }
+                categoryAdapter.notifyDataSetChanged()
+            }
+
+            override fun onCancelled(error: DatabaseError) {}
+        }
+
+        expenseRef.addValueEventListener(subcategoryListener)
+        incomeRef.addValueEventListener(subcategoryListener)
+    }
 
     /*private fun filterSubcategories(query: String) {
         val filteredList = subcategoryList.filter { it.contains(query, ignoreCase = true) }
