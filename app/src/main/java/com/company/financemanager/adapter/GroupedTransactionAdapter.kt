@@ -14,7 +14,8 @@ import java.util.*
 
 data class GroupedTransaction(val date: String, val transactions: List<TransactionModels>)
 
-class GroupedTransactionAdapter(private val groupedTransactions: List<GroupedTransaction>) :
+class GroupedTransactionAdapter(private val groupedTransactions: List<GroupedTransaction>,
+                                private val onItemClicked: (TransactionModels) -> Unit) :
     RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     private val VIEW_TYPE_HEADER = 0
@@ -24,10 +25,17 @@ class GroupedTransactionAdapter(private val groupedTransactions: List<GroupedTra
         val dateHeaderTextView: TextView = itemView.findViewById(R.id.dateHeaderTextView)
     }
 
-    class ItemViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+    class ItemViewHolder(itemView: View, private val onItemClicked: (TransactionModels) -> Unit) : RecyclerView.ViewHolder(itemView) {
         val descriptionText: TextView = itemView.findViewById(R.id.descriptiontext)
         val subcategoryText: TextView = itemView.findViewById(R.id.subcategorytext)
         val amountText: TextView = itemView.findViewById(R.id.amounttext)
+
+        fun bind(transaction: TransactionModels) {
+            descriptionText.text = transaction.description
+            subcategoryText.text = transaction.subcategory
+            amountText.text = "Rp ${NumberFormat.getNumberInstance(Locale("id", "ID")).format(transaction.amount)}"
+            itemView.setOnClickListener { onItemClicked(transaction) }
+        }
     }
 
     override fun getItemViewType(position: Int): Int {
@@ -51,7 +59,7 @@ class GroupedTransactionAdapter(private val groupedTransactions: List<GroupedTra
             HeaderViewHolder(view)
         } else {
             val view = LayoutInflater.from(parent.context).inflate(R.layout.transaction_row, parent, false)
-            ItemViewHolder(view)
+            ItemViewHolder(view, onItemClicked)
         }
     }
 
@@ -67,6 +75,7 @@ class GroupedTransactionAdapter(private val groupedTransactions: List<GroupedTra
             currentPosition--
             if (currentPosition < group.transactions.size && holder is ItemViewHolder) {
                 val transaction = group.transactions[currentPosition]
+                holder.bind(transaction)
                 holder.descriptionText.text = transaction.description
                 holder.subcategoryText.text = transaction.subcategory
                 val numberFormat = NumberFormat.getNumberInstance(Locale("id", "ID"))

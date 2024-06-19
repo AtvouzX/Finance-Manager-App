@@ -29,6 +29,7 @@ class CategoryAdapter(
 
     override fun onBindViewHolder(holder: SubcategoryViewHolder, position: Int) {
         holder.bind(subcategories[position])
+
     }
 
     fun updateList(newList: List<String>) {

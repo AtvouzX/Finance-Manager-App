@@ -1,9 +1,12 @@
 package com.company.financemanager.ui.transaction
 
+import android.app.AlertDialog
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
+import android.widget.EditText
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.navigation.NavController
@@ -35,14 +38,16 @@ class TransactionFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         val view = inflater.inflate(R.layout.fragment_transaction, container, false)
-
+        transactionRecyclerView = view.findViewById(R.id.transactionRecyclerView)
         textViewBalanceAmount = view.findViewById(R.id.textViewBalanceAmount)
         textViewIncomeAmount = view.findViewById(R.id.textViewIncomeAmount)
         textViewExpenseAmount = view.findViewById(R.id.textViewExpenseAmount)
         transactionRecyclerView = view.findViewById(R.id.transactionRecyclerView)
 
         transactionRecyclerView.layoutManager = LinearLayoutManager(context)
-        groupedTransactionAdapter = GroupedTransactionAdapter(groupedTransactionList)
+        groupedTransactionAdapter = GroupedTransactionAdapter(groupedTransactionList) { transaction ->
+            showEditDeleteDialog(transaction)
+        }
         transactionRecyclerView.adapter = groupedTransactionAdapter
 
         database = FirebaseDatabase.getInstance().reference
@@ -129,6 +134,74 @@ class TransactionFragment : Fragment() {
 
             override fun onCancelled(error: DatabaseError) {
                 // Handle errors here
+            }
+        })
+    }
+
+    private fun showEditDeleteDialog(transaction: TransactionModels) {
+        val dialogView = layoutInflater.inflate(R.layout.dialog_edit_delete, null)
+        val editTextAmount = dialogView.findViewById<EditText>(R.id.editTextAmount)
+        val editTextDescription = dialogView.findViewById<EditText>(R.id.editTextDescription)
+        val buttonDelete = dialogView.findViewById<Button>(R.id.buttonDelete)
+        val buttonSave = dialogView.findViewById<Button>(R.id.buttonSave)
+
+        editTextAmount.setText(transaction.amount.toString())
+        editTextDescription.setText(transaction.description)
+
+        val dialog = AlertDialog.Builder(requireContext())
+            .setTitle("Edit/Delete Transaction")
+            .setView(dialogView)
+            .create()
+
+        buttonDelete.setOnClickListener {
+            updateBalance(transaction.amount, transaction.category, true)
+            database.child("transactions").child(transaction.id).removeValue()
+            dialog.dismiss()
+        }
+
+        buttonSave.setOnClickListener {
+            val updatedAmount = editTextAmount.text.toString().toDouble()
+            val updatedDescription = editTextDescription.text.toString()
+
+            // Update balance with the difference between old and new amount
+            val difference = updatedAmount - transaction.amount
+            updateBalance(difference, transaction.category, false)
+
+            database.child("transactions").child(transaction.id).setValue(
+                transaction.copy(amount = updatedAmount, description = updatedDescription)
+            )
+            dialog.dismiss()
+        }
+
+        dialog.show()
+    }
+
+    private fun updateBalance(amount: Double, category: String, isDeletion: Boolean) {
+        val balanceRef = database.child("balance")
+        balanceRef.runTransaction(object : com.google.firebase.database.Transaction.Handler {
+            override fun doTransaction(currentData: MutableData): com.google.firebase.database.Transaction.Result {
+                val totalIncome = currentData.child("total_income").getValue(Double::class.java) ?: 0.0
+                val totalExpense = currentData.child("total_expense").getValue(Double::class.java) ?: 0.0
+
+                if (isDeletion) {
+                    if (category == "Income") {
+                        currentData.child("total_income").value = totalIncome - amount
+                    } else {
+                        currentData.child("total_expense").value = totalExpense - amount
+                    }
+                } else {
+                    if (category == "Income") {
+                        currentData.child("total_income").value = totalIncome + amount
+                    } else {
+                        currentData.child("total_expense").value = totalExpense + amount
+                    }
+                }
+
+                return com.google.firebase.database.Transaction.success(currentData)
+            }
+
+            override fun onComplete(error: DatabaseError?, committed: Boolean, currentData: DataSnapshot?) {
+                // Handle transaction completion
             }
         })
     }
