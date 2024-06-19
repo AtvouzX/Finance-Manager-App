@@ -6,6 +6,8 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.fragment.app.Fragment
+import androidx.navigation.NavController
+import androidx.navigation.Navigation
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.firebase.database.*
@@ -15,6 +17,7 @@ import com.company.financemanager.R
 import com.company.financemanager.adapter.GroupedTransaction
 import com.company.financemanager.adapter.GroupedTransactionAdapter
 import com.company.financemanager.models.TransactionModels
+import com.google.android.material.bottomnavigation.BottomNavigationView
 
 class TransactionFragment : Fragment() {
 
@@ -25,6 +28,7 @@ class TransactionFragment : Fragment() {
     private lateinit var database: DatabaseReference
     private lateinit var groupedTransactionAdapter: GroupedTransactionAdapter
     private val groupedTransactionList = mutableListOf<GroupedTransaction>()
+    private lateinit var navController: NavController
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -46,7 +50,38 @@ class TransactionFragment : Fragment() {
         loadBalanceData()
         loadTransactionData()
 
+
         return view
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        // Inisialisasi NavController
+        navController = Navigation.findNavController(requireActivity(), R.id.nav_host_fragment_activity_main)
+
+        // Dapatkan referensi ke BottomNavigationView
+        val bottomNav = requireActivity().findViewById<BottomNavigationView>(R.id.nav_view)
+
+        // Tambahkan listener untuk menangani klik pada item navbar
+        bottomNav.setOnNavigationItemSelectedListener { item ->
+            when (item.itemId) {
+                R.id.navigation_home -> {
+                    // Pindah ke HomeFragment
+                    navController.navigate(R.id.navigation_home)
+                    true
+                }R.id.navigation_transaction -> {
+                    navController.navigate(R.id.navigation_transaction)
+                true
+            }
+                R.id.navigation_add -> {
+                    // Pindah ke ProfileFragment
+                    navController.navigate(R.id.navigation_add)
+                    true
+                }
+                // Tambahkan kasus lain untuk item navbar lainnya jika ada
+                else -> false
+            }
+        }
     }
 
     private fun loadBalanceData() {

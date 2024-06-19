@@ -1,29 +1,24 @@
 package com.company.financemanager
 
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
+import android.widget.Toast
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.navigation.NavController
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.company.financemanager.databinding.ActivityMainBinding
-import com.company.financemanager.adapter.HomeAdapter
-import com.company.financemanager.models.HomeHistory
-import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.DatabaseError
-import com.google.firebase.database.DatabaseReference
-import com.google.firebase.database.FirebaseDatabase
-import com.google.firebase.database.ValueEventListener
+
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
-    private lateinit var dbref : DatabaseReference
-    private lateinit var homeRecyclerview : RecyclerView
-    private lateinit var homeArrayList : ArrayList<HomeHistory>
+    private var doubleBackToExitPressedOnce = false
+
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -49,23 +44,19 @@ class MainActivity : AppCompatActivity() {
         navView.setupWithNavController(navController)
     }
 
-    private fun getHomeData() {
-        dbref = FirebaseDatabase.getInstance().getReference("transactions")
-        dbref.addValueEventListener(object : ValueEventListener{
-            override fun onDataChange(snapshot: DataSnapshot) {
-                if (snapshot.exists()){
-                    for (transactionSnapshot in snapshot.children){
-                        val transaction = transactionSnapshot.getValue(HomeHistory::class.java)
-                        homeArrayList.add(transaction!!)
-                    }
-                    homeRecyclerview.adapter = HomeAdapter()
-                }
-            }
+    override fun onBackPressed() {
+        if (doubleBackToExitPressedOnce) {
+            super.onBackPressed()
+            finishAffinity() // Mengakhiri semua aktivitas dan keluar dari aplikasi
+            return
+        }
 
-            override fun onCancelled(error: DatabaseError) {
-                TODO("Not yet implemented")
-            }
+        this.doubleBackToExitPressedOnce = true
+        Toast.makeText(this, "Tekan kembali lagi untuk keluar", Toast.LENGTH_SHORT).show()
 
-        })
+        Handler(Looper.getMainLooper()).postDelayed({
+            doubleBackToExitPressedOnce = false
+        }, 2000) // Rentang waktu 2 detik
     }
+
 }
