@@ -53,10 +53,14 @@ class TransactionFragment : Fragment() {
     private fun loadBalanceData() {
         database.child("balance").addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
-                val totalBalance = snapshot.child("total_balance").getValue(Double::class.java) ?: 0.0
                 val totalIncome = snapshot.child("total_income").getValue(Double::class.java) ?: 0.0
                 val totalExpense = snapshot.child("total_expense").getValue(Double::class.java) ?: 0.0
                 val numberFormat = NumberFormat.getNumberInstance(Locale("id", "ID"))
+                val totalBalance = totalIncome - totalExpense
+
+                //update totalBalance di firebase
+                database.child("balance").child("total_balance").setValue(totalBalance)
+
 
                 textViewBalanceAmount.text = "Rp ${numberFormat.format(totalBalance)}"
                 textViewIncomeAmount.text = "Rp ${numberFormat.format(totalIncome)}"
