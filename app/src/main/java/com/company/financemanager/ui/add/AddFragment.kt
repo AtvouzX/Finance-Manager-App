@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ArrayAdapter
 import android.widget.AutoCompleteTextView
 import android.widget.Button
 import android.widget.EditText
@@ -44,6 +45,9 @@ class AddFragment : Fragment() {
     private lateinit var categoryAdapter: CategoryAdapter
     private lateinit var subcategoryList: MutableList<String>
     private lateinit var database: DatabaseReference
+    private val expenseCategories = mutableSetOf<String>()
+    private val incomeCategories = mutableSetOf<String>()
+
 
     private var _binding: FragmentAddBinding? = null
 
@@ -66,6 +70,7 @@ class AddFragment : Fragment() {
         saveButton = view.findViewById(R.id.saveButton)
         recyclerViewSubcategory = view.findViewById(R.id.recyclerViewSubcategory)
 
+
         recyclerViewSubcategory.layoutManager = LinearLayoutManager(context)
         subcategoryList = mutableListOf()
         categoryAdapter = CategoryAdapter(subcategoryList) { selectedSubcategory ->
@@ -76,7 +81,7 @@ class AddFragment : Fragment() {
 
         database = FirebaseDatabase.getInstance().reference
 
-        loadSubcategories()
+        loadCategories()
 
         val dateSetListener = DatePickerDialog.OnDateSetListener { _, year, month, dayOfMonth ->
             calendar.set(Calendar.YEAR, year)
@@ -129,6 +134,26 @@ class AddFragment : Fragment() {
         editTextDate.setText(sdf.format(calendar.time))
     }
 
+    private fun loadCategories() {
+        database.child("categories").addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                snapshot.child("Expense").children.forEach {
+                    if (it.value == true) expenseCategories.add(it.key ?: "")
+                }
+                snapshot.child("Income").children.forEach {
+                    if (it.value == true) incomeCategories.add(it.key ?: "")
+                }
+                val allCategories = expenseCategories + incomeCategories
+                val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_dropdown_item_1line, allCategories.toList())
+                autoCompleteCategory.setAdapter(adapter)
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                // Handle error
+            }
+        })
+    }
+
     private fun saveTransaction() {
         val date = editTextDate.text.toString()
         val category = autoCompleteCategory.text.toString()
@@ -141,25 +166,32 @@ class AddFragment : Fragment() {
         }
 
         val amountValue = amount.toDouble()
-
         val transactionId = database.child("transactions").push().key ?: return
-
         val formattedDate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(SimpleDateFormat("d MMMM yyyy", Locale("id", "ID")).parse(date)!!)
 
-        val transactionCategory = if (category.contains("Income", ignoreCase = true)) "Income" else "Expense"
+        val transactionCategory = when {
+            expenseCategories.contains(category) -> "Expense"
+            incomeCategories.contains(category) -> "Income"
+            else -> ""
+        }
+
+        if (transactionCategory.isEmpty()) {
+            Toast.makeText(requireContext(), "Invalid category", Toast.LENGTH_SHORT).show()
+            return
+        }
 
         val transaction = TransactionModels(
             id = transactionId,
             description = description,
             date = formattedDate,
             subcategory = category,
-            amount = if (transactionCategory == "Expense") -amountValue else amountValue,
+            amount = amountValue,
             category = transactionCategory
         )
 
         database.child("transactions").child(transactionId).setValue(transaction).addOnCompleteListener {
             if (it.isSuccessful) {
-                updateBalance(transaction.amount, transaction.category)
+                updateBalance(amountValue, transaction.category)
                 Toast.makeText(requireContext(), "Transaction saved", Toast.LENGTH_SHORT).show()
                 clearFields()
             } else {
@@ -181,7 +213,7 @@ class AddFragment : Fragment() {
                     currentData.child("total_income").value = totalIncome + amount
                 } else {
                     currentData.child("total_balance").value = totalBalance - amount
-                    currentData.child("total_expense").value = totalExpense - amount
+                    currentData.child("total_expense").value = totalExpense + amount
                 }
                 return com.google.firebase.database.Transaction.success(currentData)
             }
@@ -199,27 +231,27 @@ class AddFragment : Fragment() {
         editTextDescription.text.clear()
     }
 
-    private fun loadSubcategories() {
-        val expenseRef = database.child("categories").child("Expense")
-        val incomeRef = database.child("categories").child("Income")
-
-        val subcategoryListener = object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                for (dataSnapshot in snapshot.children) {
-                    val subcategory = dataSnapshot.key ?: continue
-                    if (!subcategoryList.contains(subcategory)) {
-                        subcategoryList.add(subcategory)
-                    }
-                }
-                categoryAdapter.notifyDataSetChanged()
-            }
-
-            override fun onCancelled(error: DatabaseError) {}
-        }
-
-        expenseRef.addValueEventListener(subcategoryListener)
-        incomeRef.addValueEventListener(subcategoryListener)
-    }
+//    private fun loadSubcategories() {
+//        val expenseRef = database.child("categories").child("Expense")
+//        val incomeRef = database.child("categories").child("Income")
+//
+//        val subcategoryListener = object : ValueEventListener {
+//            override fun onDataChange(snapshot: DataSnapshot) {
+//                for (dataSnapshot in snapshot.children) {
+//                    val subcategory = dataSnapshot.key ?: continue
+//                    if (!subcategoryList.contains(subcategory)) {
+//                        subcategoryList.add(subcategory)
+//                    }
+//                }
+//                categoryAdapter.notifyDataSetChanged()
+//            }
+//
+//            override fun onCancelled(error: DatabaseError) {}
+//        }
+//
+//        expenseRef.addValueEventListener(subcategoryListener)
+//        incomeRef.addValueEventListener(subcategoryListener)
+//    }
 
     /*private fun filterSubcategories(query: String) {
         val filteredList = subcategoryList.filter { it.contains(query, ignoreCase = true) }
