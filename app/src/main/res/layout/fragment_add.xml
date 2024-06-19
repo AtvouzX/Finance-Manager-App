@@ -117,7 +117,8 @@
                             android:inputType="text"
                             android:textColor="@color/txMain"
                             android:textColorLink="@color/purple"
-                            android:textSize="15sp" />
+                            android:textSize="15sp"
+                            android:focusable="false"/>
 
                         <ImageButton
                             android:id="@+id/buttonSubcategory"
