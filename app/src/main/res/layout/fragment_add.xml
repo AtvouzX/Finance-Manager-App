@@ -77,7 +77,9 @@
                             android:fontFamily="@font/poppins"
                             android:inputType="date"
                             android:textColor="@color/txMain"
-                            android:textSize="15sp" />
+                            android:textSize="15sp"
+                            android:focusable ="false"
+                            />
 
                         <ImageButton
                             android:id="@+id/buttonCalendar"
