@@ -46,6 +46,7 @@ class TransactionFragment : Fragment() {
         loadBalanceData()
         loadTransactionData()
 
+
         return view
     }
 

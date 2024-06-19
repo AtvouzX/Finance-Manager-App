@@ -8,12 +8,14 @@ import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.company.financemanager.R
 import com.company.financemanager.adapter.HomeAdapter
 import com.company.financemanager.databinding.FragmentHomeBinding
 import com.company.financemanager.models.HomeHistory
+import com.company.financemanager.ui.transaction.TransactionFragment
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
@@ -68,6 +70,7 @@ class HomeFragment : Fragment() {
         // Mengambil dan menampilkan data transaksi
         loadTransactions()
 
+
         return view
     }
 
@@ -117,6 +120,10 @@ class HomeFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        view.findViewById<TextView>(R.id.seeAll).setOnClickListener {
+            findNavController().navigate(R.id.action_homeFragment_to_transactionFragment)
+        }
+
         HomeRecyclerview = view.findViewById(R.id.tr_history)
         HomeRecyclerview.layoutManager = LinearLayoutManager(context)
         HomeRecyclerview.setHasFixedSize(true)
@@ -129,6 +136,7 @@ class HomeFragment : Fragment() {
             adapter.updateHomeList(it)
         }
     }
+
 
 
 }
