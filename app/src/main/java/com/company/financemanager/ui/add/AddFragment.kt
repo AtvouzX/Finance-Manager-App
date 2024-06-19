@@ -131,7 +131,7 @@ class AddFragment : Fragment() {
     }
 
     private fun updateLabel() {
-        val sdf = SimpleDateFormat("d MMMM yyyy", Locale("id", "ID"))
+        val sdf = SimpleDateFormat("d MMMM yyyy", Locale("en", "EN"))
         editTextDate.setText(sdf.format(calendar.time))
     }
 
@@ -168,7 +168,7 @@ class AddFragment : Fragment() {
 
         val amountValue = amount.toDouble()
         val transactionId = database.child("transactions").push().key ?: return
-        val formattedDate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(SimpleDateFormat("d MMMM yyyy", Locale("id", "ID")).parse(date)!!)
+        val formattedDate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(SimpleDateFormat("d MMMM yyyy", Locale("en", "EN")).parse(date)!!)
 
         val transactionCategory = when {
             expenseCategories.contains(category) -> "Expense"
