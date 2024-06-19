@@ -5,12 +5,11 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import com.company.financemanager.R
 
-class SubcategoryAdapter(
+class CategoryAdapter(
     private var subcategories: List<String>,
     private val onItemClick: (String) -> Unit
-) : RecyclerView.Adapter<SubcategoryAdapter.SubcategoryViewHolder>() {
+) : RecyclerView.Adapter<CategoryAdapter.SubcategoryViewHolder>() {
     class SubcategoryViewHolder(itemView: View, val onItemClick: (String) -> Unit) : RecyclerView.ViewHolder(itemView) {
         val textView: TextView = itemView.findViewById(android.R.id.text1)
 

@@ -1,8 +1,11 @@
 package com.company.financemanager.models
 
-data class TransactionModels(var id : String ?=null,
-                             var amount : Double ?=null,
-                             var date : String ?=null,
-                             var category : String ?=null,
-                             var subcategory : String ?=null,
-                             var description : String ?=null)
+data class TransactionModels(
+    val id: String = "",
+    val description: String = "",
+    val date: String = "",
+    val subcategory: String = "",
+    val amount: Double = 0.0,
+    val category: String = ""
+)
+

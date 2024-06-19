@@ -8,7 +8,6 @@ import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.company.financemanager.adapter.TransactionAdapter
 import com.google.firebase.database.*
 import java.text.NumberFormat
 import java.util.*

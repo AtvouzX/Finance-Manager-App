@@ -5,19 +5,26 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.AutoCompleteTextView
+import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageButton
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.company.financemanager.R
-import com.company.financemanager.adapter.SubcategoryAdapter
+import com.company.financemanager.adapter.CategoryAdapter
 import com.company.financemanager.databinding.FragmentAddBinding
+import com.company.financemanager.models.TransactionModels
+
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.MutableData
 import com.google.firebase.database.ValueEventListener
+import com.google.firebase.database.Transaction
 import java.text.SimpleDateFormat
 import java.util.Locale
 import java.util.*
@@ -26,12 +33,15 @@ class AddFragment : Fragment() {
 
     private lateinit var editTextDate: EditText
     private lateinit var buttonCalendar: ImageButton
-    private lateinit var editTextSubcategory: EditText
-    private lateinit var buttonSubcategory: ImageButton
+    private lateinit var autoCompleteCategory: AutoCompleteTextView
+    private lateinit var buttonCategory: ImageButton
     private lateinit var recyclerViewSubcategory: RecyclerView
+    private lateinit var editTextAmount: EditText
+    private lateinit var editTextDescription: EditText
+    private lateinit var saveButton: Button
     private val calendar = Calendar.getInstance()
 
-    private lateinit var subcategoryAdapter: SubcategoryAdapter
+    private lateinit var categoryAdapter: CategoryAdapter
     private lateinit var subcategoryList: MutableList<String>
     private lateinit var database: DatabaseReference
 
@@ -49,17 +59,20 @@ class AddFragment : Fragment() {
         val view = inflater.inflate(R.layout.fragment_add, container, false)
         editTextDate = view.findViewById(R.id.editTextDate)
         buttonCalendar = view.findViewById(R.id.buttonCalendar)
-        editTextSubcategory = view.findViewById(R.id.autoCompleteCategory)
-        buttonSubcategory = view.findViewById(R.id.buttonSubcategory)
+        autoCompleteCategory = view.findViewById(R.id.autoCompleteCategory)
+        buttonCategory = view.findViewById(R.id.buttonSubcategory)
+        editTextAmount = view.findViewById(R.id.editTextAmount)
+        editTextDescription = view.findViewById(R.id.editTextDescription)
+        saveButton = view.findViewById(R.id.saveButton)
         recyclerViewSubcategory = view.findViewById(R.id.recyclerViewSubcategory)
 
         recyclerViewSubcategory.layoutManager = LinearLayoutManager(context)
         subcategoryList = mutableListOf()
-        subcategoryAdapter = SubcategoryAdapter(subcategoryList) { selectedSubcategory ->
-            editTextSubcategory.setText(selectedSubcategory)
+        categoryAdapter = CategoryAdapter(subcategoryList) { selectedSubcategory ->
+            autoCompleteCategory.setText(selectedSubcategory)
             recyclerViewSubcategory.visibility = View.GONE
         }
-        recyclerViewSubcategory.adapter = subcategoryAdapter
+        recyclerViewSubcategory.adapter = categoryAdapter
 
         database = FirebaseDatabase.getInstance().reference
 
@@ -78,15 +91,26 @@ class AddFragment : Fragment() {
                 calendar.get(Calendar.DAY_OF_MONTH)).show()
         }
 
-        editTextDate.setOnClickListener(dateClickListener)
+        editTextDate.setOnClickListener {
+            DatePickerDialog(
+                requireContext(), dateSetListener,
+                calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH),
+                calendar.get(Calendar.DAY_OF_MONTH)
+            ).show()
+        }
+
+        saveButton.setOnClickListener {
+            saveTransaction()
+        }
+
         buttonCalendar.setOnClickListener(dateClickListener)
 
         val subcategoryClickListener = View.OnClickListener {
             recyclerViewSubcategory.visibility = if (recyclerViewSubcategory.visibility == View.GONE) View.VISIBLE else View.GONE
         }
 
-        editTextSubcategory.setOnClickListener(subcategoryClickListener)
-        buttonSubcategory.setOnClickListener(subcategoryClickListener)
+        autoCompleteCategory.setOnClickListener(subcategoryClickListener)
+        buttonCategory.setOnClickListener(subcategoryClickListener)
 
         /*editTextSubcategory.addTextChangedListener(object : TextWatcher {
             override fun afterTextChanged(s: Editable?) {
@@ -105,6 +129,76 @@ class AddFragment : Fragment() {
         editTextDate.setText(sdf.format(calendar.time))
     }
 
+    private fun saveTransaction() {
+        val date = editTextDate.text.toString()
+        val category = autoCompleteCategory.text.toString()
+        val amount = editTextAmount.text.toString()
+        val description = editTextDescription.text.toString()
+
+        if (date.isEmpty() || category.isEmpty() || amount.isEmpty() || description.isEmpty()) {
+            Toast.makeText(requireContext(), "Please fill all fields", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        val amountValue = amount.toDouble()
+
+        val transactionId = database.child("transactions").push().key ?: return
+
+        val formattedDate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(SimpleDateFormat("d MMMM yyyy", Locale("id", "ID")).parse(date)!!)
+
+        val transactionCategory = if (category.contains("Income", ignoreCase = true)) "Income" else "Expense"
+
+        val transaction = TransactionModels(
+            id = transactionId,
+            description = description,
+            date = formattedDate,
+            subcategory = category,
+            amount = if (transactionCategory == "Expense") -amountValue else amountValue,
+            category = transactionCategory
+        )
+
+        database.child("transactions").child(transactionId).setValue(transaction).addOnCompleteListener {
+            if (it.isSuccessful) {
+                updateBalance(transaction.amount, transaction.category)
+                Toast.makeText(requireContext(), "Transaction saved", Toast.LENGTH_SHORT).show()
+                clearFields()
+            } else {
+                Toast.makeText(requireContext(), "Failed to save transaction", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    private fun updateBalance(amount: Double, category: String) {
+        val balanceRef = database.child("balance")
+        balanceRef.runTransaction(object : com.google.firebase.database.Transaction.Handler {
+            override fun doTransaction(currentData: MutableData): com.google.firebase.database.Transaction.Result {
+                val totalBalance = currentData.child("total_balance").getValue(Double::class.java) ?: 0.0
+                val totalIncome = currentData.child("total_income").getValue(Double::class.java) ?: 0.0
+                val totalExpense = currentData.child("total_expense").getValue(Double::class.java) ?: 0.0
+
+                if (category == "Income") {
+                    currentData.child("total_balance").value = totalBalance + amount
+                    currentData.child("total_income").value = totalIncome + amount
+                } else {
+                    currentData.child("total_balance").value = totalBalance - amount
+                    currentData.child("total_expense").value = totalExpense - amount
+                }
+                return com.google.firebase.database.Transaction.success(currentData)
+            }
+
+            override fun onComplete(error: DatabaseError?, committed: Boolean, currentData: DataSnapshot?) {
+                // Handle transaction completion
+            }
+        })
+    }
+
+    private fun clearFields() {
+        editTextDate.text.clear()
+        autoCompleteCategory.text.clear()
+        editTextAmount.text.clear()
+        editTextDescription.text.clear()
+    }
+
     private fun loadSubcategories() {
         val expenseRef = database.child("categories").child("Expense")
         val incomeRef = database.child("categories").child("Income")
@@ -117,7 +211,7 @@ class AddFragment : Fragment() {
                         subcategoryList.add(subcategory)
                     }
                 }
-                subcategoryAdapter.notifyDataSetChanged()
+                categoryAdapter.notifyDataSetChanged()
             }
 
             override fun onCancelled(error: DatabaseError) {}
@@ -137,3 +231,7 @@ class AddFragment : Fragment() {
         _binding = null
     }
 }
+
+
+
+

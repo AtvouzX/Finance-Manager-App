@@ -59,9 +59,10 @@ class GroupedTransactionAdapter(private val groupedTransactions: List<GroupedTra
         var currentPosition = position
         for (group in groupedTransactions) {
             if (currentPosition == 0 && holder is HeaderViewHolder) {
-                val sdf = SimpleDateFormat("d MMMM yyyy", Locale("id", "ID"))
-                val date = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).parse(group.date)
-                holder.dateHeaderTextView.text = date?.let { sdf.format(it) }
+//                val sdf = SimpleDateFormat("d MMMM yyyy", Locale("id", "ID"))
+//                val date = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).parse(group.date)
+//                holder.dateHeaderTextView.text = date?.let { sdf.format(it) }
+                holder.dateHeaderTextView.text = group.date
                 return
             }
             currentPosition--
