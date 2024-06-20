@@ -4,6 +4,48 @@
     android:orientation="vertical"
     android:padding="16dp">
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <EditText
+            android:id="@+id/editTextDate"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:hint="Date"
+            android:focusable="false" />
+
+        <ImageButton
+            android:id="@+id/buttonDatePicker"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_calendar"
+            android:backgroundTint="#00FFFFFF"/>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <AutoCompleteTextView
+            android:id="@+id/autoCompleteCategory"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:hint="Category"
+            android:focusable="false"/>
+
+        <ImageButton
+            android:id="@+id/buttonCategoryPicker"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:backgroundTint="#00FFFFFF"
+            android:src="@drawable/ic_arrow_down" />
+    </LinearLayout>
+
     <EditText
         android:id="@+id/editTextAmount"
         android:layout_width="match_parent"

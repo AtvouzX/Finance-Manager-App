@@ -1,12 +1,18 @@
 package com.company.financemanager.ui.transaction
 
 import android.app.AlertDialog
+import android.app.DatePickerDialog
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ArrayAdapter
+import android.widget.AutoCompleteTextView
 import android.widget.Button
 import android.widget.EditText
+import android.widget.ImageButton
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.navigation.NavController
@@ -17,10 +23,13 @@ import com.google.firebase.database.*
 import java.text.NumberFormat
 import java.util.*
 import com.company.financemanager.R
+import com.company.financemanager.adapter.CategoryAdapter
 import com.company.financemanager.adapter.GroupedTransaction
 import com.company.financemanager.adapter.GroupedTransactionAdapter
 import com.company.financemanager.models.TransactionModels
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import java.text.DecimalFormat
+import java.text.SimpleDateFormat
 
 class TransactionFragment : Fragment() {
 
@@ -32,6 +41,8 @@ class TransactionFragment : Fragment() {
     private lateinit var groupedTransactionAdapter: GroupedTransactionAdapter
     private val groupedTransactionList = mutableListOf<GroupedTransaction>()
     private lateinit var navController: NavController
+    private val expenseCategories = mutableListOf<String>()
+    private val incomeCategories = mutableListOf<String>()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -115,7 +126,6 @@ class TransactionFragment : Fragment() {
     private fun loadTransactionData() {
         database.child("transactions").addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
-                groupedTransactionList.clear()
                 val transactions = mutableListOf<TransactionModels>()
                 for (dataSnapshot in snapshot.children) {
                     val transaction = dataSnapshot.getValue(TransactionModels::class.java)
@@ -126,10 +136,30 @@ class TransactionFragment : Fragment() {
                 groupedTransactionList.clear()
                 val groupedByDate = transactions.groupBy { it.date }
                 for ((date, transactionsOnDate) in groupedByDate) {
-                    groupedTransactionList.add(GroupedTransaction(date.toString(), transactionsOnDate))
+                    groupedTransactionList.add(GroupedTransaction(date, transactionsOnDate))
                 }
                 groupedTransactionList.sortByDescending { it.date }
                 groupedTransactionAdapter.notifyDataSetChanged()
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                // Handle errors here
+            }
+        })
+    }
+
+    private fun loadCategories() {
+        database.child("categories").addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                expenseCategories.clear()
+                incomeCategories.clear()
+
+                snapshot.child("Expense").children.forEach {
+                    if (it.value == true) expenseCategories.add(it.key ?: "")
+                }
+                snapshot.child("Income").children.forEach {
+                    if (it.value == true) incomeCategories.add(it.key ?: "")
+                }
             }
 
             override fun onCancelled(error: DatabaseError) {
@@ -142,16 +172,96 @@ class TransactionFragment : Fragment() {
         val dialogView = layoutInflater.inflate(R.layout.dialog_edit_delete, null)
         val editTextAmount = dialogView.findViewById<EditText>(R.id.editTextAmount)
         val editTextDescription = dialogView.findViewById<EditText>(R.id.editTextDescription)
+        val editTextDate = dialogView.findViewById<EditText>(R.id.editTextDate)
+        val autoCompleteCategory = dialogView.findViewById<AutoCompleteTextView>(R.id.autoCompleteCategory)
+        val buttonDatePicker = dialogView.findViewById<ImageButton>(R.id.buttonDatePicker)
+        val buttonCategoryPicker = dialogView.findViewById<ImageButton>(R.id.buttonCategoryPicker)
         val buttonDelete = dialogView.findViewById<Button>(R.id.buttonDelete)
         val buttonSave = dialogView.findViewById<Button>(R.id.buttonSave)
+        val builder = AlertDialog.Builder(requireContext())
+        builder.setView(dialogView)
+        val dialog = builder.create()
 
-        editTextAmount.setText(transaction.amount.toString())
+        val decimalFormat = DecimalFormat("#,###.##")
+        editTextAmount.setText(decimalFormat.format(transaction.amount))
         editTextDescription.setText(transaction.description)
+        editTextDate.setText(transaction.date)
+        autoCompleteCategory.setText(transaction.subcategory)
 
-        val dialog = AlertDialog.Builder(requireContext())
-            .setTitle("Edit/Delete Transaction")
-            .setView(dialogView)
-            .create()
+        // Real-time formatting for amount
+        editTextAmount.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+
+            override fun afterTextChanged(s: Editable?) {
+                editTextAmount.removeTextChangedListener(this)
+
+                try {
+                    var originalString = s.toString()
+
+                    if (originalString.contains(",")) {
+                        originalString = originalString.replace(",".toRegex(), "")
+                    }
+
+                    val longval = originalString.toDouble()
+                    val formatter = DecimalFormat("#,###.##")
+                    val formattedString = formatter.format(longval)
+
+                    editTextAmount.setText(formattedString)
+                    editTextAmount.setSelection(editTextAmount.text.length)
+                } catch (nfe: NumberFormatException) {
+                    nfe.printStackTrace()
+                }
+
+                editTextAmount.addTextChangedListener(this)
+            }
+        })
+
+        // DatePicker logic
+        val dateSetListener = DatePickerDialog.OnDateSetListener { _, year, month, dayOfMonth ->
+            val cal = Calendar.getInstance()
+            cal.set(Calendar.YEAR, year)
+            cal.set(Calendar.MONTH, month)
+            cal.set(Calendar.DAY_OF_MONTH, dayOfMonth)
+            val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+            editTextDate.setText(sdf.format(cal.time))
+        }
+
+        val showDatePicker = {
+            val cal = Calendar.getInstance()
+            DatePickerDialog(
+                requireContext(), dateSetListener,
+                cal.get(Calendar.YEAR), cal.get(Calendar.MONTH),
+                cal.get(Calendar.DAY_OF_MONTH)
+            ).show()
+        }
+
+        editTextDate.setOnClickListener { showDatePicker() }
+        buttonDatePicker.setOnClickListener { showDatePicker() }
+
+        // Category picker logic
+        val showCategoryPicker = {
+            val dialogView = layoutInflater.inflate(R.layout.dialog_category_picker, null)
+            val recyclerView = dialogView.findViewById<RecyclerView>(R.id.recyclerViewCategory)
+            recyclerView.layoutManager = LinearLayoutManager(requireContext())
+            val categoryList = expenseCategories + incomeCategories
+            val adapter = CategoryAdapter(categoryList) { selectedCategory ->
+                autoCompleteCategory.setText(selectedCategory)
+                dialog.dismiss()
+            }
+            recyclerView.adapter = adapter
+
+            val dialog = AlertDialog.Builder(requireContext())
+                .setTitle("Select Category")
+                .setView(dialogView)
+                .create()
+
+            dialog.show()
+        }
+
+        autoCompleteCategory.setOnClickListener { showCategoryPicker() }
+        buttonCategoryPicker.setOnClickListener { showCategoryPicker() }
 
         buttonDelete.setOnClickListener {
             updateBalance(transaction.amount, transaction.category, true)
@@ -160,21 +270,28 @@ class TransactionFragment : Fragment() {
         }
 
         buttonSave.setOnClickListener {
-            val updatedAmount = editTextAmount.text.toString().toDouble()
+            val updatedAmount = editTextAmount.text.toString().replace(",", "").toDouble()
             val updatedDescription = editTextDescription.text.toString()
+            val updatedDate = editTextDate.text.toString()
+            val updatedCategory = autoCompleteCategory.text.toString()
 
-            // Update balance with the difference between old and new amount
             val difference = updatedAmount - transaction.amount
             updateBalance(difference, transaction.category, false)
 
-            database.child("transactions").child(transaction.id).setValue(
-                transaction.copy(amount = updatedAmount, description = updatedDescription)
+            val updatedTransaction = transaction.copy(
+                amount = updatedAmount,
+                description = updatedDescription,
+                date = updatedDate,
+                subcategory = updatedCategory
             )
+
+            database.child("transactions").child(transaction.id).setValue(updatedTransaction)
             dialog.dismiss()
         }
 
         dialog.show()
     }
+
 
     private fun updateBalance(amount: Double, category: String, isDeletion: Boolean) {
         val balanceRef = database.child("balance")
@@ -205,4 +322,6 @@ class TransactionFragment : Fragment() {
             }
         })
     }
+
+
 }
