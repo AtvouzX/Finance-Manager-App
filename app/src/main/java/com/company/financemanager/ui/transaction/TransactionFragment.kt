@@ -5,10 +5,10 @@ import android.app.DatePickerDialog
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ArrayAdapter
 import android.widget.AutoCompleteTextView
 import android.widget.Button
 import android.widget.EditText
@@ -43,6 +43,7 @@ class TransactionFragment : Fragment() {
     private lateinit var navController: NavController
     private val expenseCategories = mutableListOf<String>()
     private val incomeCategories = mutableListOf<String>()
+    private lateinit var categoryDialog: AlertDialog
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -56,45 +57,41 @@ class TransactionFragment : Fragment() {
         transactionRecyclerView = view.findViewById(R.id.transactionRecyclerView)
 
         transactionRecyclerView.layoutManager = LinearLayoutManager(context)
-        groupedTransactionAdapter = GroupedTransactionAdapter(groupedTransactionList) { transaction ->
-            showEditDeleteDialog(transaction)
-        }
+        groupedTransactionAdapter =
+            GroupedTransactionAdapter(groupedTransactionList) { transaction ->
+                showEditDeleteDialog(transaction)
+            }
         transactionRecyclerView.adapter = groupedTransactionAdapter
 
         database = FirebaseDatabase.getInstance().reference
 
         loadBalanceData()
         loadTransactionData()
-
+        loadCategories()
 
         return view
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        // Inisialisasi NavController
-        navController = Navigation.findNavController(requireActivity(), R.id.nav_host_fragment_activity_main)
+        navController =
+            Navigation.findNavController(requireActivity(), R.id.nav_host_fragment_activity_main)
 
-        // Dapatkan referensi ke BottomNavigationView
         val bottomNav = requireActivity().findViewById<BottomNavigationView>(R.id.nav_view)
 
-        // Tambahkan listener untuk menangani klik pada item navbar
         bottomNav.setOnNavigationItemSelectedListener { item ->
             when (item.itemId) {
                 R.id.navigation_home -> {
-                    // Pindah ke HomeFragment
                     navController.navigate(R.id.navigation_home)
                     true
                 }R.id.navigation_transaction -> {
                     navController.navigate(R.id.navigation_transaction)
-                true
-            }
-                R.id.navigation_add -> {
-                    // Pindah ke ProfileFragment
+                    true
+                }R.id.navigation_add -> {
                     navController.navigate(R.id.navigation_add)
                     true
                 }
-                // Tambahkan kasus lain untuk item navbar lainnya jika ada
+
                 else -> false
             }
         }
@@ -111,14 +108,12 @@ class TransactionFragment : Fragment() {
                 //update totalBalance di firebase
                 database.child("balance").child("total_balance").setValue(totalBalance)
 
-
                 textViewBalanceAmount.text = "Rp ${numberFormat.format(totalBalance)}"
                 textViewIncomeAmount.text = "Rp ${numberFormat.format(totalIncome)}"
                 textViewExpenseAmount.text = "Rp ${numberFormat.format(totalExpense)}"
             }
 
             override fun onCancelled(error: DatabaseError) {
-                // Handle errors here
             }
         })
     }
@@ -143,7 +138,6 @@ class TransactionFragment : Fragment() {
             }
 
             override fun onCancelled(error: DatabaseError) {
-                // Handle errors here
             }
         })
     }
@@ -163,7 +157,41 @@ class TransactionFragment : Fragment() {
             }
 
             override fun onCancelled(error: DatabaseError) {
-                // Handle errors here
+            }
+        })
+    }
+
+    private fun updateBalance(amount: Double, category: String, isDeletion: Boolean) {
+        val balanceRef = database.child("balance")
+        balanceRef.runTransaction(object : com.google.firebase.database.Transaction.Handler {
+            override fun doTransaction(currentData: MutableData): com.google.firebase.database.Transaction.Result {
+                val totalIncome =
+                    currentData.child("total_income").getValue(Double::class.java) ?: 0.0
+                val totalExpense =
+                    currentData.child("total_expense").getValue(Double::class.java) ?: 0.0
+
+                if (isDeletion) {
+                    if (category == "Income") {
+                        currentData.child("total_income").value = totalIncome - amount
+                    } else {
+                        currentData.child("total_expense").value = totalExpense - amount
+                    }
+                } else {
+                    if (category == "Income") {
+                        currentData.child("total_income").value = totalIncome + amount
+                    } else {
+                        currentData.child("total_expense").value = totalExpense + amount
+                    }
+                }
+
+                return com.google.firebase.database.Transaction.success(currentData)
+            }
+
+            override fun onComplete(
+                error: DatabaseError?,
+                committed: Boolean,
+                currentData: DataSnapshot?
+            ) {
             }
         })
     }
@@ -173,7 +201,8 @@ class TransactionFragment : Fragment() {
         val editTextAmount = dialogView.findViewById<EditText>(R.id.editTextAmount)
         val editTextDescription = dialogView.findViewById<EditText>(R.id.editTextDescription)
         val editTextDate = dialogView.findViewById<EditText>(R.id.editTextDate)
-        val autoCompleteCategory = dialogView.findViewById<AutoCompleteTextView>(R.id.autoCompleteCategory)
+        val autoCompleteCategory =
+            dialogView.findViewById<AutoCompleteTextView>(R.id.autoCompleteCategory)
         val buttonDatePicker = dialogView.findViewById<ImageButton>(R.id.buttonDatePicker)
         val buttonCategoryPicker = dialogView.findViewById<ImageButton>(R.id.buttonCategoryPicker)
         val buttonDelete = dialogView.findViewById<Button>(R.id.buttonDelete)
@@ -181,14 +210,12 @@ class TransactionFragment : Fragment() {
         val builder = AlertDialog.Builder(requireContext())
         builder.setView(dialogView)
         val dialog = builder.create()
-
         val decimalFormat = DecimalFormat("#,###.##")
         editTextAmount.setText(decimalFormat.format(transaction.amount))
         editTextDescription.setText(transaction.description)
         editTextDate.setText(transaction.date)
         autoCompleteCategory.setText(transaction.subcategory)
 
-        // Real-time formatting for amount
         editTextAmount.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
 
@@ -218,7 +245,6 @@ class TransactionFragment : Fragment() {
             }
         })
 
-        // DatePicker logic
         val dateSetListener = DatePickerDialog.OnDateSetListener { _, year, month, dayOfMonth ->
             val cal = Calendar.getInstance()
             cal.set(Calendar.YEAR, year)
@@ -240,25 +266,31 @@ class TransactionFragment : Fragment() {
         editTextDate.setOnClickListener { showDatePicker() }
         buttonDatePicker.setOnClickListener { showDatePicker() }
 
-        // Category picker logic
-        val showCategoryPicker = {
-            val dialogView = layoutInflater.inflate(R.layout.dialog_category_picker, null)
-            val recyclerView = dialogView.findViewById<RecyclerView>(R.id.recyclerViewCategory)
+        fun showCategoryPicker() {
+            val categoryPickerView = layoutInflater.inflate(R.layout.dialog_category_picker, null)
+            val recyclerView = categoryPickerView.findViewById<RecyclerView>(R.id.recyclerViewCategory)
             recyclerView.layoutManager = LinearLayoutManager(requireContext())
+
             val categoryList = expenseCategories + incomeCategories
             val adapter = CategoryAdapter(categoryList) { selectedCategory ->
                 autoCompleteCategory.setText(selectedCategory)
-                dialog.dismiss()
+                Log.d("TransactionFragment", "Selected category: $selectedCategory")
+                categoryDialog.dismiss()
             }
             recyclerView.adapter = adapter
 
-            val dialog = AlertDialog.Builder(requireContext())
+            val categoryDialog = AlertDialog.Builder(requireContext())
                 .setTitle("Select Category")
-                .setView(dialogView)
+                .setView(categoryPickerView)
+                .setNegativeButton("Cancel") { dialog, _ ->
+                    dialog.dismiss()
+                }
                 .create()
 
-            dialog.show()
+            this.categoryDialog = categoryDialog
+            categoryDialog.show()
         }
+
 
         autoCompleteCategory.setOnClickListener { showCategoryPicker() }
         buttonCategoryPicker.setOnClickListener { showCategoryPicker() }
@@ -291,37 +323,4 @@ class TransactionFragment : Fragment() {
 
         dialog.show()
     }
-
-
-    private fun updateBalance(amount: Double, category: String, isDeletion: Boolean) {
-        val balanceRef = database.child("balance")
-        balanceRef.runTransaction(object : com.google.firebase.database.Transaction.Handler {
-            override fun doTransaction(currentData: MutableData): com.google.firebase.database.Transaction.Result {
-                val totalIncome = currentData.child("total_income").getValue(Double::class.java) ?: 0.0
-                val totalExpense = currentData.child("total_expense").getValue(Double::class.java) ?: 0.0
-
-                if (isDeletion) {
-                    if (category == "Income") {
-                        currentData.child("total_income").value = totalIncome - amount
-                    } else {
-                        currentData.child("total_expense").value = totalExpense - amount
-                    }
-                } else {
-                    if (category == "Income") {
-                        currentData.child("total_income").value = totalIncome + amount
-                    } else {
-                        currentData.child("total_expense").value = totalExpense + amount
-                    }
-                }
-
-                return com.google.firebase.database.Transaction.success(currentData)
-            }
-
-            override fun onComplete(error: DatabaseError?, committed: Boolean, currentData: DataSnapshot?) {
-                // Handle transaction completion
-            }
-        })
-    }
-
-
 }
