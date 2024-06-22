@@ -2,6 +2,8 @@ package com.company.financemanager.ui.transaction
 
 import android.app.AlertDialog
 import android.app.DatePickerDialog
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -14,6 +16,7 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.TextView
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.navigation.NavController
 import androidx.navigation.Navigation
@@ -45,6 +48,7 @@ class TransactionFragment : Fragment() {
     private val incomeCategories = mutableListOf<String>()
     private lateinit var categoryDialog: AlertDialog
 
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -55,6 +59,7 @@ class TransactionFragment : Fragment() {
         textViewIncomeAmount = view.findViewById(R.id.textViewIncomeAmount)
         textViewExpenseAmount = view.findViewById(R.id.textViewExpenseAmount)
         transactionRecyclerView = view.findViewById(R.id.transactionRecyclerView)
+
 
         transactionRecyclerView.layoutManager = LinearLayoutManager(context)
         groupedTransactionAdapter =
@@ -217,33 +222,48 @@ class TransactionFragment : Fragment() {
         autoCompleteCategory.setText(transaction.subcategory)
 
         editTextAmount.addTextChangedListener(object : TextWatcher {
+            private var current = ""
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
 
             override fun afterTextChanged(s: Editable?) {
-                editTextAmount.removeTextChangedListener(this)
+                if (s.toString() != current) {
+                    editTextAmount.removeTextChangedListener(this)
 
-                try {
-                    var originalString = s.toString()
+                    try {
+                        var originalString = s.toString()
 
-                    if (originalString.contains(",")) {
-                        originalString = originalString.replace(",".toRegex(), "")
+                        // Preserve cursor position
+                        val cursorPosition = editTextAmount.selectionStart
+
+                        // Remove all non-digit characters (including commas)
+                        originalString = originalString.replace("[^\\d]".toRegex(), "")
+
+                        // Parse to long for integer handling
+                        val longval = originalString.toLong()
+                        val formatter = DecimalFormat("#,###")
+                        val formattedString = formatter.format(longval)
+
+                        // Set formatted text and preserve cursor position
+                        current = formattedString
+                        editTextAmount.setText(formattedString)
+                        editTextAmount.setSelection(
+                            if (cursorPosition + formattedString.length - originalString.length > formattedString.length)
+                                formattedString.length
+                            else
+                                cursorPosition + formattedString.length - originalString.length
+                        )
+                    } catch (nfe: NumberFormatException) {
+                        nfe.printStackTrace()
                     }
 
-                    val longval = originalString.toDouble()
-                    val formatter = DecimalFormat("#,###.##")
-                    val formattedString = formatter.format(longval)
-
-                    editTextAmount.setText(formattedString)
-                    editTextAmount.setSelection(editTextAmount.text.length)
-                } catch (nfe: NumberFormatException) {
-                    nfe.printStackTrace()
+                    editTextAmount.addTextChangedListener(this)
                 }
-
-                editTextAmount.addTextChangedListener(this)
             }
         })
+
+
 
         val dateSetListener = DatePickerDialog.OnDateSetListener { _, year, month, dayOfMonth ->
             val cal = Calendar.getInstance()
@@ -302,25 +322,54 @@ class TransactionFragment : Fragment() {
         }
 
         buttonSave.setOnClickListener {
-            val updatedAmount = editTextAmount.text.toString().replace(",", "").toDouble()
-            val updatedDescription = editTextDescription.text.toString()
-            val updatedDate = editTextDate.text.toString()
-            val updatedCategory = autoCompleteCategory.text.toString()
+            try {
+                // Remove commas and parse the amount
+                val amountString = editTextAmount.text.toString().replace(".", "")
+                val updatedAmount = amountString.toDouble()
 
-            val difference = updatedAmount - transaction.amount
-            updateBalance(difference, transaction.category, false)
+                val updatedDescription = editTextDescription.text.toString()
+                val updatedDate = editTextDate.text.toString()
+                val updatedCategory = autoCompleteCategory.text.toString()
 
-            val updatedTransaction = transaction.copy(
-                amount = updatedAmount,
-                description = updatedDescription,
-                date = updatedDate,
-                subcategory = updatedCategory
-            )
+                // Calculate the difference in amount
+                val difference = updatedAmount - transaction.amount
 
-            database.child("transactions").child(transaction.id).setValue(updatedTransaction)
-            dialog.dismiss()
+                // Determine if the category has changed from Expense to Income or vice versa
+                val isOldCategoryExpense = transaction.subcategory.equals("Expense", ignoreCase = true)
+                val isNewCategoryExpense = updatedCategory.equals("Expense", ignoreCase = true)
+
+                // Update the balance based on the category change
+                if (isOldCategoryExpense && !isNewCategoryExpense) {
+                    // Changed from Expense to Income
+                    updateBalance(transaction.amount, transaction.subcategory, true) // Revert old expense
+                    updateBalance(updatedAmount, updatedCategory, false) // Apply new income
+                } else if (!isOldCategoryExpense && isNewCategoryExpense) {
+                    // Changed from Income to Expense
+                    updateBalance(transaction.amount, transaction.subcategory, false) // Revert old income
+                    updateBalance(updatedAmount, updatedCategory, true) // Apply new expense
+                } else {
+                    // No change in type, just update with difference
+                    updateBalance(difference, updatedCategory, isNewCategoryExpense)
+                }
+
+                // Create the updated transaction object
+                val updatedTransaction = transaction.copy(
+                    amount = updatedAmount,
+                    description = updatedDescription,
+                    date = updatedDate,
+                    subcategory = updatedCategory
+                )
+
+                // Update the transaction in the database
+                database.child("transactions").child(transaction.id).setValue(updatedTransaction)
+                dialog.dismiss() // Dismiss the dialog after saving
+            } catch (e: NumberFormatException) {
+                e.printStackTrace()
+                // Handle error (e.g., show a toast or error message)
+                Toast.makeText(requireContext(), "Invalid input for amount", Toast.LENGTH_SHORT).show()
+            }
         }
-
+        dialog?.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
         dialog.show()
     }
 }

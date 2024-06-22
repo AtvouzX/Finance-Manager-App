@@ -2,6 +2,8 @@ package com.company.financemanager.ui.add
 
 import android.app.DatePickerDialog
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -26,6 +28,8 @@ import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.MutableData
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.Transaction
+import java.text.DecimalFormat
+import java.text.NumberFormat
 import java.text.SimpleDateFormat
 import java.util.Locale
 import java.util.*
@@ -51,9 +55,6 @@ class AddFragment : Fragment() {
 
     private var _binding: FragmentAddBinding? = null
 
-    // This property is only valid between onCreateView and
-    // onDestroyView.
-
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -69,6 +70,7 @@ class AddFragment : Fragment() {
         editTextDescription = view.findViewById(R.id.editTextDescription)
         saveButton = view.findViewById(R.id.saveButton)
         recyclerViewSubcategory = view.findViewById(R.id.recyclerViewSubcategory)
+
 
 
         recyclerViewSubcategory.layoutManager = LinearLayoutManager(context)
@@ -130,6 +132,10 @@ class AddFragment : Fragment() {
         return view
     }
 
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+    }
+
     private fun updateLabel() {
         val sdf = SimpleDateFormat("d MMMM yyyy", Locale("en", "EN"))
         editTextDate.setText(sdf.format(calendar.time))
@@ -158,7 +164,7 @@ class AddFragment : Fragment() {
     private fun saveTransaction() {
         val date = editTextDate.text.toString()
         val category = autoCompleteCategory.text.toString()
-        val amount = editTextAmount.text.toString()
+        val amount = editTextAmount.text.toString().replace(".", "")
         val description = editTextDescription.text.toString()
 
         if (date.isEmpty() || category.isEmpty() || amount.isEmpty() || description.isEmpty()) {
@@ -210,10 +216,8 @@ class AddFragment : Fragment() {
                 val totalExpense = currentData.child("total_expense").getValue(Double::class.java) ?: 0.0
 
                 if (category == "Income") {
-                    currentData.child("total_balance").value = totalBalance + amount
                     currentData.child("total_income").value = totalIncome + amount
                 } else {
-                    currentData.child("total_balance").value = totalBalance - amount
                     currentData.child("total_expense").value = totalExpense + amount
                 }
                 return com.google.firebase.database.Transaction.success(currentData)

@@ -196,12 +196,12 @@
                         android:layout_height="wrap_content"
                         android:layout_gravity="end"
                         android:layout_weight="1"
+                        android:clickable="true"
+                        android:focusable="true"
                         android:fontFamily="@font/poppins_medium"
                         android:text="See All"
                         android:textAlignment="viewEnd"
-                        android:textColor="@color/purple"
-                        android:clickable="true"
-                        android:focusable="true"/>
+                        android:textColor="@color/purple" />
 
                 </LinearLayout>
 
