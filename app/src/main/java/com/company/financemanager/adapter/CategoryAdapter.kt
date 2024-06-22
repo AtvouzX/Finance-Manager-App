@@ -12,7 +12,6 @@ class CategoryAdapter(
 ) : RecyclerView.Adapter<CategoryAdapter.SubcategoryViewHolder>() {
     class SubcategoryViewHolder(itemView: View, val onItemClick: (String) -> Unit) : RecyclerView.ViewHolder(itemView) {
         val textView: TextView = itemView.findViewById(android.R.id.text1)
-
         fun bind(subcategory: String) {
             textView.text = subcategory
             itemView.setOnClickListener { onItemClick(subcategory) }
@@ -29,7 +28,6 @@ class CategoryAdapter(
 
     override fun onBindViewHolder(holder: SubcategoryViewHolder, position: Int) {
         holder.bind(subcategories[position])
-
     }
 
     fun updateList(newList: List<String>) {
