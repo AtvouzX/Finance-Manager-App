@@ -14,7 +14,7 @@ import java.util.*
 
 data class GroupedTransaction(val date: String, val transactions: List<TransactionModels>)
 
-class GroupedTransactionAdapter(private val groupedTransactions: List<GroupedTransaction>,
+class GroupedTransactionAdapter(private var groupedTransactions: List<GroupedTransaction>,
                                 private val onItemClicked: (TransactionModels) -> Unit) :
     RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
@@ -98,5 +98,10 @@ class GroupedTransactionAdapter(private val groupedTransactions: List<GroupedTra
             count += 1 + group.transactions.size // 1 for header, plus number of transactions
         }
         return count
+    }
+
+    fun updateData(newTransactions: List<GroupedTransaction>) {
+        this.groupedTransactions = newTransactions
+        notifyDataSetChanged()
     }
 }

@@ -30,7 +30,10 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:background="#00FFFFFF"
-                    android:orientation="horizontal">
+                    android:orientation="horizontal"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent">
 
                     <androidx.constraintlayout.widget.ConstraintLayout
                         android:layout_width="match_parent"
@@ -40,7 +43,7 @@
                             android:id="@+id/text_dashboard_welcome"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
-                            android:layout_marginStart="38dp"
+                            android:layout_marginStart="24dp"
                             android:layout_marginTop="28dp"
                             android:fontFamily="@font/poppins_medium"
                             android:text="@string/dashboard_welcome"
@@ -72,9 +75,9 @@
                     android:id="@+id/cardView"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="20dp"
+                    android:layout_marginStart="8dp"
                     android:layout_marginTop="41dp"
-                    android:layout_marginEnd="20dp"
+                    android:layout_marginEnd="8dp"
                     android:background="@color/white"
                     android:foreground="?attr/selectableItemBackground"
                     app:cardCornerRadius="10dp"
@@ -87,6 +90,8 @@
                         android:id="@+id/linearLayout"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
+                        android:layout_marginTop="10dp"
+                        android:layout_marginBottom="10dp"
                         android:orientation="horizontal">
 
                         <androidx.constraintlayout.widget.ConstraintLayout
@@ -109,7 +114,7 @@
                                     android:fontFamily="@font/poppins"
                                     android:text="@string/dashboard_balance"
                                     android:textColor="@color/txMain"
-                                    android:textSize="12sp" />
+                                    android:textSize="18sp" />
 
                                 <TextView
                                     android:id="@+id/balance_amount"
@@ -150,7 +155,7 @@
                                     android:fontFamily="@font/poppins"
                                     android:text="@string/dashboard_expense"
                                     android:textColor="@color/txMain"
-                                    android:textSize="12sp" />
+                                    android:textSize="18sp" />
 
                                 <TextView
                                     android:id="@+id/expense_amount"
@@ -166,6 +171,29 @@
                     </LinearLayout>
                 </androidx.cardview.widget.CardView>
 
+                <TextView
+                    android:id="@+id/textView4"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginTop="20dp"
+                    android:fontFamily="@font/poppins"
+                    android:text="Last 30 Days +12%"
+                    android:textColor="@color/txMain"
+                    android:textSize="14sp"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/cardView" />
+
+                <ImageView
+                    android:id="@+id/imageView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:src="@drawable/chart"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/textView4" />
+
                 <LinearLayout
                     android:id="@+id/linearLayout4"
                     android:layout_width="match_parent"
@@ -177,7 +205,7 @@
                     app:layout_constraintBottom_toTopOf="@+id/tr_history"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/cardView">
+                    app:layout_constraintTop_toBottomOf="@+id/imageView">
 
                     <TextView
                         android:id="@+id/textView3"
@@ -185,16 +213,16 @@
                         android:layout_height="wrap_content"
                         android:layout_gravity="start"
                         android:layout_weight="1"
-                        android:fontFamily="@font/poppins"
-                        android:text="Latest Tranactions"
+                        android:fontFamily="@font/poppins_medium"
+                        android:text="Latest Transactions"
                         android:textColor="@color/txMain"
-                        android:textSize="14sp" />
+                        android:textSize="18sp" />
 
                     <TextView
                         android:id="@+id/seeAll"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_gravity="end"
+                        android:layout_gravity="bottom|end"
                         android:layout_weight="1"
                         android:clickable="true"
                         android:focusable="true"
